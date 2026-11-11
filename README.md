@@ -20,12 +20,22 @@ Aplikasi ini dapat di-host secara gratis dan online 24 jam melalui **Vercel** at
    git push -u origin main
    ```
 
-### 2. Deploy Otomatis (Vercel)
+### 2. Pilihan Hosting Online
+
+#### Pilihan A: Menggunakan GitHub Pages (Gratis & Otomatis)
+Repository ini sudah dilengkapi dengan file otomatisasi **GitHub Actions** (`.github/workflows/deploy.yml`).
+1. Buka repository Anda di GitHub.
+2. Masuk ke menu **Settings** > **Pages** (di menu sebelah kiri).
+3. Pada bagian **Build and deployment** > **Source**, pilih **GitHub Actions** (jangan gunakan "Deploy from a branch").
+4. Tunggu 1–2 menit, website Anda akan otomatis terbit di alamat:
+   `https://USERNAME.github.io/mawaddah-taaruf/`
+
+#### Pilihan B: Menggunakan Vercel (Paling Direkomendasikan & Sangat Cepat)
 1. Buka [vercel.com](https://vercel.com) dan login dengan akun GitHub Anda.
 2. Klik **"Add New"** > **"Project"**.
-3. Pilih repository `mawaddah-taaruf` yang baru Anda buat, lalu klik **Import**.
-4. Biarkan pengaturan default (Framework Preset: **Vite**, Build Command: `npm run build`, Output Directory: `dist`).
-5. Klik **Deploy**. Website Anda akan langsung online dalam 1-2 menit dengan link gratis seperti `https://mawaddah-taaruf.vercel.app`!
+3. Pilih repository `mawaddah-taaruf`, lalu klik **Import**.
+4. Biarkan pengaturan default (Vite), lalu klik **Deploy**.
+5. Website akan langsung online dengan domain seperti `https://mawaddah-taaruf.vercel.app`.
 
 ---
 
