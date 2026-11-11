@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'idsanusi24@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isMediator() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'mediator')
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User Profile
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Member Detailed Matrimonial Biodata (strictly protected PII)
+    match /memberDetails/{userId} {
+      allow read: if isSignedIn() && (
+        isOwner(userId) ||
+        isMediator() ||
+        isAdmin()
+      );
+      allow create: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // Taaruf Processes
+    match /taarufProcesses/{processId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        isMediator() ||
+        resource.data.ikhwanId == request.auth.uid ||
+        resource.data.akhwatId == request.auth.uid
+      );
+      allow create: if isSignedIn() && (isAdmin() || isMediator());
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        isMediator() ||
+        resource.data.ikhwanId == request.auth.uid ||
+        resource.data.akhwatId == request.auth.uid
+      );
+      allow delete: if isAdmin();
+
+      // Guided Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+          isAdmin() ||
+          isMediator() ||
+          get(/databases/$(database)/documents/taarufProcesses/$(processId)).data.ikhwanId == request.auth.uid ||
+          get(/databases/$(database)/documents/taarufProcesses/$(processId)).data.akhwatId == request.auth.uid
+        );
+        allow create: if isSignedIn() && (
+          isAdmin() ||
+          isMediator() ||
+          get(/databases/$(database)/documents/taarufProcesses/$(processId)).data.ikhwanId == request.auth.uid ||
+          get(/databases/$(database)/documents/taarufProcesses/$(processId)).data.akhwatId == request.auth.uid
+        );
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Articles & Education
+    match /articles/{articleId} {
+      allow read: if true; // Public education
+      allow write: if isAdmin();
+    }
+
+    // Complaints
+    match /complaints/{complaintId} {
+      allow read: if isSignedIn() && (resource.data.reporterId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Immutable audit log
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

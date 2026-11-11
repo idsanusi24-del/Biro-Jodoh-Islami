@@ -1,0 +1,6 @@
+{
+  "name": "Mawaddah – Biro Ta'aruf Islami",
+  "description": "Platform perantara perkenalan calon suami dan calon istri melalui proses ta'aruf yang terarah, terverifikasi, didampingi mediator, dan berlandaskan syariat Islam.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

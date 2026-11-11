@@ -1,0 +1,180 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and role details for Mawaddah Biro Taaruf.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "gender": { "type": "string", "enum": ["ikhwan", "akhwat"] },
+        "role": { "type": "string", "enum": ["admin", "mediator", "ikhwan", "akhwat"] },
+        "registrationNumber": { "type": "string", "maxLength": 32 },
+        "verificationStatus": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "phoneNumber": { "type": "string", "maxLength": 20 },
+        "city": { "type": "string", "maxLength": 100 },
+        "age": { "type": "number" },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "fullName", "gender", "role", "verificationStatus"]
+    },
+    "MemberDetail": {
+      "title": "MemberDetail",
+      "description": "Comprehensive Islamic matrimonial biodata.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "birthPlace": { "type": "string", "maxLength": 100 },
+        "birthDate": { "type": "string" },
+        "heightCm": { "type": "number" },
+        "weightKg": { "type": "number" },
+        "maritalStatus": { "type": "string", "enum": ["single", "widowed", "divorced"] },
+        "childrenCount": { "type": "number" },
+        "education": { "type": "string", "maxLength": 100 },
+        "profession": { "type": "string", "maxLength": 100 },
+        "waliName": { "type": "string", "maxLength": 100 },
+        "waliRelation": { "type": "string", "maxLength": 50 },
+        "waliPhone": { "type": "string", "maxLength": 20 },
+        "religiousStudy": { "type": "string", "maxLength": 300 },
+        "prayerHabit": { "type": "string", "maxLength": 300 },
+        "quranMemorization": { "type": "string", "maxLength": 100 },
+        "isSmoker": { "type": "boolean" },
+        "marriageVision": { "type": "string", "maxLength": 1000 },
+        "partnerCriteria": { "type": "string", "maxLength": 1000 },
+        "readinessTimeline": { "type": "string", "enum": ["under_3_months", "3_to_6_months", "6_to_12_months"] },
+        "isPhotoBlurred": { "type": "boolean" },
+        "termsAgreed": { "type": "boolean" }
+      },
+      "required": ["userId", "education", "profession", "maritalStatus", "readinessTimeline", "termsAgreed"]
+    },
+    "TaarufProcess": {
+      "title": "TaarufProcess",
+      "description": "Guided taaruf match process between an ikhwan and akhwat monitored by mediator and admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ikhwanId": { "type": "string" },
+        "akhwatId": { "type": "string" },
+        "mediatorId": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposed_by_admin",
+            "waiting_candidate_response",
+            "approved_by_both",
+            "active_mediation",
+            "nazhar_scheduled",
+            "khitbah_proceeding",
+            "completed_nikah",
+            "stopped_respectfully"
+          ]
+        },
+        "ikhwanConsent": { "type": "boolean" },
+        "akhwatConsent": { "type": "boolean" },
+        "nazharDate": { "type": "string" },
+        "nazharLocation": { "type": "string", "maxLength": 200 },
+        "nazharGuardianAccompany": { "type": "boolean" },
+        "mediatorNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["ikhwanId", "akhwatId", "status"]
+    },
+    "TaarufMessage": {
+      "title": "TaarufMessage",
+      "description": "Mediated questions and answers within a taaruf process.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "processId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "senderRole": { "type": "string", "enum": ["admin", "mediator", "ikhwan", "akhwat"] },
+        "topic": { "type": "string", "maxLength": 100 },
+        "content": { "type": "string", "maxLength": 1000 },
+        "isApprovedByMediator": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["processId", "senderId", "senderRole", "content"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "Educational articles regarding Islamic marriage, adab taaruf, and family.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "maxLength": 100 },
+        "summary": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string" },
+        "author": { "type": "string", "maxLength": 100 },
+        "readTime": { "type": "string", "maxLength": 20 },
+        "publishedAt": { "type": "string" }
+      },
+      "required": ["title", "category", "content"]
+    },
+    "Complaint": {
+      "title": "Complaint",
+      "description": "Adab violation reports or inquiries from members.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reporterId": { "type": "string" },
+        "reporterName": { "type": "string", "maxLength": 100 },
+        "reportedSubject": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "investigating", "resolved"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["reporterId", "description", "status"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Administrative action logs for accountability and data privacy compliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actorId": { "type": "string" },
+        "actorName": { "type": "string", "maxLength": 100 },
+        "action": { "type": "string", "maxLength": 100 },
+        "details": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["actorId", "action", "details"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores basic user profiles and role identification."
+    },
+    "/memberDetails/{userId}": {
+      "schema": { "$ref": "#/entities/MemberDetail" },
+      "description": "Stores confidential member criteria, background, and guardian details."
+    },
+    "/taarufProcesses/{processId}": {
+      "schema": { "$ref": "#/entities/TaarufProcess" },
+      "description": "Stores managed ta'aruf cases and verification states."
+    },
+    "/taarufProcesses/{processId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/TaarufMessage" },
+      "description": "Stores guided Islamic question and answer messages supervised by mediators."
+    },
+    "/articles/{articleId}": {
+      "schema": { "$ref": "#/entities/Article" },
+      "description": "Educational articles regarding Islamic marriage and sunnah."
+    },
+    "/complaints/{complaintId}": {
+      "schema": { "$ref": "#/entities/Complaint" },
+      "description": "Privacy and adab complaints filed to admin."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Admin actions audit trail."
+    }
+  }
+}
