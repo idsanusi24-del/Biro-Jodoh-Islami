@@ -590,11 +590,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const authUid = auth.currentUser?.uid;
     const newId = authUid || `user-${basic.gender || 'ikhwan'}-${Date.now()}`;
     const regNum = `MWD-2026-${basic.gender === 'akhwat' ? 'AKH' : 'IKH'}-${Math.floor(100 + Math.random() * 900)}`;
+    const cleanEmail = basic.email 
+      ? basic.email.trim().toLowerCase() 
+      : (auth.currentUser?.email || `member${Math.floor(Math.random() * 1000)}@mawaddah.id`);
     
+    const chosenAvatar = basic.avatarUrl || (basic.gender === 'akhwat' 
+      ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80' 
+      : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80');
+
     const newUser: UserProfile = {
       id: newId,
       uid: newId,
-      email: basic.email || auth.currentUser?.email || `member${Math.floor(Math.random() * 1000)}@mawaddah.id`,
+      email: cleanEmail,
       fullName: basic.fullName || 'Hamba Allah',
       gender: basic.gender || 'ikhwan',
       role: basic.gender === 'akhwat' ? 'akhwat' : 'ikhwan',
@@ -603,9 +610,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       phoneNumber: basic.phoneNumber || '',
       city: basic.city || 'Jakarta',
       age: basic.age || 25,
-      avatarUrl: basic.avatarUrl || (basic.gender === 'akhwat' 
-        ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80' 
-        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'),
+      avatarUrl: chosenAvatar,
       createdAt: new Date().toISOString()
     };
 
@@ -632,6 +637,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       partnerCriteria: detail.partnerCriteria || 'Shalih/shalihah, taat beragama, berakhlak mulia, siap saling membimbing.',
       readinessTimeline: detail.readinessTimeline || '3_to_6_months',
       isPhotoBlurred: detail.isPhotoBlurred ?? true,
+      avatarUrl: chosenAvatar,
       termsAgreed: true,
       updatedAt: new Date().toISOString()
     };
@@ -640,6 +646,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAllDetails(prev => ({ ...prev, [newId]: newDetail }));
     setCurrentUser(newUser);
     setCurrentDetail(newDetail);
+    localStorage.setItem('mawaddah_active_user', JSON.stringify(newUser));
+    localStorage.setItem('mawaddah_active_detail', JSON.stringify(newDetail));
 
     addAuditLog('Pendaftaran Anggota Baru', `Anggota baru terdaftar: ${newUser.fullName} (${newUser.registrationNumber})`, newId);
 

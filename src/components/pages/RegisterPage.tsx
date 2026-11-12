@@ -138,6 +138,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
         setErrorMsg('Mohon lengkapi Nama Lengkap, Domisili Kota, dan Nomor WhatsApp Anda.');
         return;
       }
+      if (!email.trim() || !email.includes('@')) {
+        setErrorMsg('Mohon cantumkan Alamat Email aktif yang valid. Email ini WAJIB diisi karena digunakan untuk Masuk / Login ke Akun Peserta Anda.');
+        return;
+      }
     } else if (step === 2) {
       if (!profession.trim() || !education.trim()) {
         setErrorMsg('Mohon lengkapi Pendidikan Terakhir dan Pekerjaan Anda.');
@@ -173,6 +177,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
       setErrorMsg('Anda wajib menyetujui Pakta Integritas Syar\'i dan Prosedur Ta\'aruf Mawaddah.');
       return;
     }
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMsg('Alamat Email aktif wajib diisi sebagai syarat masuk akun peserta.');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -182,7 +190,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
         {
           fullName,
           gender,
-          email: email || `${fullName.toLowerCase().replace(/\s+/g, '')}@mawaddah.id`,
+          email: email.trim().toLowerCase(),
           phoneNumber,
           city,
           age,
@@ -306,6 +314,29 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
                     placeholder="Contoh: Muhammad Ihsan Pratama, S.T."
                     className="w-full px-4 py-2.5 rounded-xl border border-[#0284C7] focus:outline-none focus:border-emerald-400 text-sm bg-[#EBF5FE] text-black placeholder:text-stone-500"
                   />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-black flex items-center gap-1.5">
+                      <span>Alamat Email Aktif *</span>
+                      <span className="text-red-600 font-extrabold">(Wajib untuk Masuk / Login Akun Peserta)</span>
+                    </label>
+                    <span className="text-[10px] text-emerald-900 font-black bg-emerald-100 px-2.5 py-0.5 rounded-md border border-emerald-400">
+                      ID Login Peserta
+                    </span>
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Contoh: nama.anda@gmail.com"
+                    className="w-full px-4 py-2.5 rounded-xl border-2 border-[#0284C7] focus:outline-none focus:border-emerald-500 text-sm bg-[#EBF5FE] text-black placeholder:text-stone-500 font-medium"
+                  />
+                  <p className="text-[11px] text-black font-medium mt-0.5">
+                    Email ini akan Anda gunakan sebagai syarat masuk akun setiap kali login di portal peserta Mawaddah.
+                  </p>
                 </div>
 
                 <div className="space-y-1">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Users, 
+  User,
   UserCheck, 
   HeartHandshake, 
   ShieldCheck, 
@@ -458,7 +459,7 @@ export const AdminDashboard: React.FC = () => {
               <thead>
                 <tr className="border-b border-[#064E3B]/60 text-black font-medium font-semibold bg-[#EBF5FE]">
                   <th className="py-3 px-4">No. Registrasi</th>
-                  <th className="py-3 px-4">Nama Anggota</th>
+                  <th className="py-3 px-4">Foto & Nama Peserta</th>
                   <th className="py-3 px-4">Gender / Usia</th>
                   <th className="py-3 px-4">Kota Domisili</th>
                   <th className="py-3 px-4">Status Verifikasi</th>
@@ -468,8 +469,25 @@ export const AdminDashboard: React.FC = () => {
               <tbody className="divide-y divide-[#064E3B]/40">
                 {filteredUsers.map((u) => (
                   <tr key={u.id} className="hover:bg-white/5">
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-300">{u.registrationNumber}</td>
-                    <td className="py-3 px-4 font-semibold text-black">{u.fullName}</td>
+                    <td className="py-3 px-4 font-mono font-bold text-emerald-800">{u.registrationNumber}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-14 rounded-xl bg-white border-2 border-[#064E3B] overflow-hidden shrink-0 shadow-xs flex items-center justify-center">
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt={u.fullName} className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-6 h-6 text-stone-400" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-bold text-black text-xs sm:text-sm">{u.fullName}</div>
+                          <div className="text-[11px] text-stone-600 font-medium">{u.email}</div>
+                          {u.phoneNumber && (
+                            <div className="text-[10px] text-emerald-800 font-semibold">{u.phoneNumber}</div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
                     <td className="py-3 px-4 capitalize text-black font-medium">{u.gender} • {u.age} th</td>
                     <td className="py-3 px-4 text-black font-medium">{u.city}</td>
                     <td className="py-3 px-4">
@@ -1085,25 +1103,78 @@ export const AdminDashboard: React.FC = () => {
               </button>
             </div>
 
+            {/* Candidate Photo & Header Profile Card */}
+            <div className="flex flex-col sm:flex-row items-center gap-5 p-5 rounded-2xl bg-[#EBF5FE] border-2 border-[#0284C7]/80 shadow-depth-sm">
+              <div className="relative w-32 h-40 rounded-2xl border-2 border-[#064E3B] bg-white overflow-hidden shadow-depth-sm shrink-0 flex items-center justify-center">
+                {selectedUserForDetail.avatarUrl ? (
+                  <img
+                    src={selectedUserForDetail.avatarUrl}
+                    alt={selectedUserForDetail.fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center p-3">
+                    <User className="w-10 h-10 text-stone-400 mx-auto" />
+                    <span className="text-[10px] text-stone-500 block mt-1">Belum Ada Foto</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5 flex-1 text-center sm:text-left">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-400 text-[11px] font-black">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Foto Terdaftar Resmi</span>
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full font-black text-[11px] border ${
+                    selectedUserForDetail.verificationStatus === 'verified'
+                      ? 'bg-[#064E3B] text-emerald-100 border-emerald-400'
+                      : 'bg-amber-100 text-amber-950 border-amber-400'
+                  }`}>
+                    {selectedUserForDetail.verificationStatus === 'verified' ? 'TERVERIFIKASI' : 'MENUNGGU VERIFIKASI'}
+                  </span>
+                </div>
+
+                <h4 className="font-serif text-xl font-black text-black">{selectedUserForDetail.fullName}</h4>
+                <div className="text-xs text-black font-semibold">
+                  Alamat Email: <span className="font-mono text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">{selectedUserForDetail.email}</span>
+                </div>
+                <div className="text-xs text-black font-medium">
+                  WhatsApp: <strong className="text-emerald-900">{selectedUserForDetail.phoneNumber || 'Belum diisi'}</strong>
+                </div>
+                <div className="text-[11px] text-stone-700 font-medium">
+                  Privasi Foto ke Calon Lain: <strong>{allDetails[selectedUserForDetail.id]?.isPhotoBlurred ? 'Diburamkan (Privat)' : 'Terbuka'}</strong>
+                </div>
+              </div>
+            </div>
+
             {allDetails[selectedUserForDetail.id] && (
               <div className="space-y-4 text-xs sm:text-sm text-black font-medium">
-                <div className="grid grid-cols-2 gap-2 bg-[#EBF5FE] p-4 rounded-xl border border-[#064E3B]/40">
-                  <div>Usia: {selectedUserForDetail.age} Tahun</div>
-                  <div>Domisili: {selectedUserForDetail.city}</div>
-                  <div>Status: {allDetails[selectedUserForDetail.id].maritalStatus}</div>
-                  <div>Pendidikan: {allDetails[selectedUserForDetail.id].education}</div>
-                  <div className="col-span-2">Pekerjaan: {allDetails[selectedUserForDetail.id].profession}</div>
+                <div className="grid grid-cols-2 gap-3 bg-[#EBF5FE] p-4 rounded-xl border border-[#064E3B]/40">
+                  <div><span className="text-stone-600 block text-[11px]">Usia & Gender:</span> <strong className="text-black capitalize">{selectedUserForDetail.age} Tahun • {selectedUserForDetail.gender}</strong></div>
+                  <div><span className="text-stone-600 block text-[11px]">Domisili:</span> <strong className="text-black">{selectedUserForDetail.city}</strong></div>
+                  <div><span className="text-stone-600 block text-[11px]">Status Pernikahan:</span> <strong className="text-black">{allDetails[selectedUserForDetail.id].maritalStatus === 'single' ? 'Lajang' : 'Pernah Menikah'}</strong></div>
+                  <div><span className="text-stone-600 block text-[11px]">Pendidikan Terakhir:</span> <strong className="text-black">{allDetails[selectedUserForDetail.id].education}</strong></div>
+                  <div className="col-span-2"><span className="text-stone-600 block text-[11px]">Profesi & Pekerjaan:</span> <strong className="text-black">{allDetails[selectedUserForDetail.id].profession}</strong></div>
                 </div>
 
-                <div className="p-4 bg-[#EBF5FE] rounded-xl space-y-1 border border-[#064E3B]/60">
-                  <div className="font-bold text-emerald-400">Data Wali Nasab:</div>
-                  <div>Nama: {allDetails[selectedUserForDetail.id].waliName} ({allDetails[selectedUserForDetail.id].waliRelation})</div>
-                  <div>No Telepon/WA: {allDetails[selectedUserForDetail.id].waliPhone}</div>
+                <div className="p-4 bg-[#EBF5FE] rounded-xl space-y-1.5 border border-[#064E3B]/60">
+                  <div className="font-bold text-emerald-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>Data Wali Nasab Terdaftar:</span>
+                  </div>
+                  <div>Nama Wali: <strong className="text-black">{allDetails[selectedUserForDetail.id].waliName}</strong> ({allDetails[selectedUserForDetail.id].waliRelation})</div>
+                  <div>Nomor Telepon/WA Wali: <strong className="text-emerald-900 font-mono">{allDetails[selectedUserForDetail.id].waliPhone}</strong></div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="font-bold text-black">Visi Pernikahan:</div>
-                  <p className="italic text-black font-medium">{allDetails[selectedUserForDetail.id].marriageVision}</p>
+                <div className="p-4 bg-[#EBF5FE] rounded-xl space-y-1 border border-[#064E3B]/50">
+                  <div className="font-bold text-black">Visi & Cita-cita Pernikahan:</div>
+                  <p className="italic text-stone-800 leading-relaxed">"{allDetails[selectedUserForDetail.id].marriageVision}"</p>
+                </div>
+
+                <div className="p-4 bg-[#EBF5FE] rounded-xl space-y-1 border border-[#064E3B]/50">
+                  <div className="font-bold text-black">Kriteria Calon Pasangan:</div>
+                  <p className="text-stone-800">{allDetails[selectedUserForDetail.id].partnerCriteria}</p>
                 </div>
               </div>
             )}

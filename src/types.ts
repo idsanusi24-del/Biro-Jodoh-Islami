@@ -57,6 +57,7 @@ export interface MemberDetail {
   readinessTimeline: ReadinessTimeline;
   isPhotoBlurred: boolean;
   termsAgreed: boolean;
+  avatarUrl?: string;
   updatedAt?: string;
 }
 

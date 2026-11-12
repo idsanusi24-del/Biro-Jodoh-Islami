@@ -22,7 +22,9 @@ import {
   FileText,
   Bell,
   Award,
-  Check
+  Check,
+  Camera,
+  Upload
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TaarufProcess, TaarufMessage } from '../../types';
@@ -39,6 +41,7 @@ export const MemberDashboard: React.FC = () => {
     respondToMatch, 
     sendMediatedMessage,
     updateMemberDetail,
+    updateUserProfile,
     submitNazharDecision,
     markNotificationAsRead
   } = useAuth();
@@ -50,6 +53,44 @@ export const MemberDashboard: React.FC = () => {
   const [newMsgContent, setNewMsgContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [nazharDecisionNotes, setNazharDecisionNotes] = useState('');
+  const [photoUpdateSuccess, setPhotoUpdateSuccess] = useState(false);
+
+  const handleUpdatePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 800;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          updateUserProfile({ avatarUrl: compressed });
+          updateMemberDetail({ avatarUrl: compressed });
+          setPhotoUpdateSuccess(true);
+          setTimeout(() => setPhotoUpdateSuccess(false), 3000);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!currentUser) {
     return null;
@@ -121,7 +162,7 @@ export const MemberDashboard: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-16 h-16 rounded-2xl bg-[#064E3B] border-2 border-[#B91C1C] flex items-center justify-center overflow-hidden shrink-0 shadow-depth-md">
-            {currentUser.avatarUrl && !currentDetail.isPhotoBlurred ? (
+            {currentUser.avatarUrl ? (
               <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="w-full h-full object-cover" />
             ) : (
               <User className="w-8 h-8 text-black" />
@@ -582,6 +623,75 @@ export const MemberDashboard: React.FC = () => {
             </button>
           </div>
 
+          {/* Official Photo Card in Member Biodata */}
+          <div className="p-6 rounded-2xl bg-[#EBF5FE] border-2 border-[#0284C7]/80 shadow-depth-sm flex flex-col sm:flex-row items-center gap-6">
+            <div className="relative w-32 h-44 rounded-2xl border-2 border-[#064E3B] bg-white overflow-hidden shadow-depth-sm shrink-0 flex items-center justify-center">
+              {currentUser.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={currentUser.fullName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center p-3">
+                  <User className="w-10 h-10 text-stone-400 mx-auto" />
+                  <span className="text-[10px] text-stone-500 block mt-1">Belum Ada Foto</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 flex-1 text-center sm:text-left">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-400 text-xs font-black">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Pas Foto Profil Syar'i Terdaftar</span>
+                </span>
+                <span className="text-xs bg-white text-black font-semibold px-2.5 py-0.5 rounded-full border border-[#0284C7]">
+                  {currentUser.gender === 'ikhwan' ? 'Ikhwan' : 'Akhwat'} • {currentUser.age} Th
+                </span>
+              </div>
+
+              <h4 className="font-serif text-xl font-black text-black">{currentUser.fullName}</h4>
+              <div className="text-xs text-black font-semibold">
+                Email Login Akun: <span className="font-mono text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">{currentUser.email}</span>
+              </div>
+              <div className="text-xs text-black font-medium">
+                Status Sensor Privasi ke Calon Lain: <strong className={currentDetail.isPhotoBlurred ? 'text-amber-800' : 'text-emerald-800'}>
+                  {currentDetail.isPhotoBlurred ? 'Aktif (Foto diburamkan, hanya dibuka saat Nazhar resmi)' : 'Terbuka'}
+                </strong>
+              </div>
+
+              {/* Action buttons: Change Photo & Toggle Blur */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#064E3B] text-white font-bold text-xs hover:bg-[#075e46] transition-all cursor-pointer shadow-depth-sm">
+                  <Upload className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>{currentUser.avatarUrl ? 'Ganti Pas Foto' : 'Unggah Pas Foto'}</span>
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp"
+                    onChange={handleUpdatePhoto}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => updateMemberDetail({ isPhotoBlurred: !currentDetail.isPhotoBlurred })}
+                  className="px-3.5 py-2 rounded-xl border border-[#0284C7] bg-white text-black font-bold text-xs hover:bg-[#BAE6FD] transition-colors cursor-pointer shadow-xs"
+                >
+                  {currentDetail.isPhotoBlurred ? 'Buka Sensor Buram' : 'Aktifkan Sensor Buram'}
+                </button>
+              </div>
+
+              {photoUpdateSuccess && (
+                <p className="text-xs font-bold text-emerald-800 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" />
+                  <span>Alhamdulillah! Foto profil berhasil diperbarui.</span>
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm">
             <div className="space-y-3">
               <h4 className="font-bold text-emerald-300 uppercase tracking-wider text-xs border-b border-[#064E3B]/50 pb-1">
@@ -635,8 +745,12 @@ export const MemberDashboard: React.FC = () => {
 
             {/* Card Body */}
             <div className="py-6 flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-[#064E3B] border-2 border-emerald-400/60 flex items-center justify-center overflow-hidden shrink-0 shadow-depth-sm">
-                <User className="w-10 h-10 text-emerald-200" />
+              <div className="w-20 h-24 rounded-2xl bg-[#064E3B] border-2 border-emerald-400/60 flex items-center justify-center overflow-hidden shrink-0 shadow-depth-sm">
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-emerald-200" />
+                )}
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold block">
@@ -829,12 +943,20 @@ export const MemberDashboard: React.FC = () => {
               </div>
 
               {/* Header Biro */}
-              <div className="text-center space-y-1 border-b-2 border-emerald-400/50 pb-4">
-                <h2 className="font-serif text-2xl font-bold text-black">BIRO TA'ARUF ISLAMI MAWADDAH</h2>
-                <p className="text-xs text-black font-medium">"Menjemput Jodoh dengan Ikhtiar, Menjaga Hati dengan Syariat"</p>
-                <div className="text-[11px] font-mono text-emerald-300">
-                  Nomor Registrasi: {currentUser.registrationNumber} • {cvPrintMode === 'curated' ? 'LEMBAR TERKURASI (KONTAK DITUTUP)' : 'LEMBAR ARSIP LENGKAP'}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b-2 border-emerald-400/50 pb-4">
+                <div className="space-y-1 text-center sm:text-left flex-1">
+                  <h2 className="font-serif text-2xl font-bold text-black">BIRO TA'ARUF ISLAMI MAWADDAH</h2>
+                  <p className="text-xs text-black font-medium">"Menjemput Jodoh dengan Ikhtiar, Menjaga Hati dengan Syariat"</p>
+                  <div className="text-[11px] font-mono text-emerald-800 font-bold">
+                    Nomor Registrasi: {currentUser.registrationNumber} • {cvPrintMode === 'curated' ? 'LEMBAR TERKURASI (KONTAK DITUTUP)' : 'LEMBAR ARSIP LENGKAP'}
+                  </div>
                 </div>
+
+                {currentUser.avatarUrl && (
+                  <div className="w-20 h-24 rounded-xl border-2 border-[#064E3B] bg-white overflow-hidden shadow-xs shrink-0">
+                    <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="w-full h-full object-cover" />
+                  </div>
+                )}
               </div>
 
               {/* Data Umum */}
