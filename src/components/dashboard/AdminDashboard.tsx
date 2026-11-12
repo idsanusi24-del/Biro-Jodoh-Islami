@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Users, 
@@ -21,7 +21,12 @@ import {
   ChevronRight,
   Download,
   PhoneCall,
-  Check
+  Check,
+  MapPin,
+  Building2,
+  Mail,
+  Save,
+  Phone
 } from 'lucide-react';
 import { UserProfile, MemberDetail, TaarufProcess } from '../../types';
 
@@ -38,11 +43,39 @@ export const AdminDashboard: React.FC = () => {
     updateTaarufStatus,
     addArticle,
     exportMembersToCSV,
-    exportProcessesToCSV
+    exportProcessesToCSV,
+    orgSettings,
+    updateOrgSettings
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'wali' | 'matchmaker' | 'processes' | 'articles' | 'complaints' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'wali' | 'matchmaker' | 'processes' | 'articles' | 'complaints' | 'audit' | 'settings'>('overview');
   
+  // Organization settings state
+  const [inputAddress, setInputAddress] = useState(orgSettings.officeAddress);
+  const [inputWhatsapp, setInputWhatsapp] = useState(orgSettings.whatsappNumber);
+  const [inputEmail, setInputEmail] = useState(orgSettings.csEmail);
+  const [settingsSuccess, setSettingsSuccess] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    setInputAddress(orgSettings.officeAddress);
+    setInputWhatsapp(orgSettings.whatsappNumber);
+    setInputEmail(orgSettings.csEmail);
+  }, [orgSettings]);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingSettings(true);
+    await updateOrgSettings({
+      officeAddress: inputAddress,
+      whatsappNumber: inputWhatsapp,
+      csEmail: inputEmail
+    });
+    setIsSavingSettings(false);
+    setSettingsSuccess(true);
+    setTimeout(() => setSettingsSuccess(false), 4000);
+  };
+
   // Member list filtering
   const [memberFilterGender, setMemberFilterGender] = useState<'all' | 'ikhwan' | 'akhwat'>('all');
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -256,6 +289,7 @@ export const AdminDashboard: React.FC = () => {
           { id: 'articles', label: 'Manajemen Artikel', icon: FileText },
           { id: 'complaints', label: 'Laporan & Pengaduan', icon: AlertCircle, count: complaints.length },
           { id: 'audit', label: 'Audit Log (UU PDP)', icon: Clock },
+          { id: 'settings', label: 'Pengaturan Kontak & WA', icon: Building2 },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -857,6 +891,131 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 9: PENGATURAN KONTAK & WHATSAPP LEMBAGA */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6 text-black">
+          <div className="bg-white border-2 border-[#0284C7] rounded-3xl p-6 sm:p-8 shadow-depth-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-sky-100 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#BAE6FD] text-black text-xs font-black border border-[#0284C7]">
+                  <Building2 className="w-3.5 h-3.5 text-black" />
+                  <span>Profil & Kontak Layanan</span>
+                </div>
+                <h2 className="font-serif text-2xl font-black text-black mt-2">
+                  Ubah Alamat Layanan & Nomor WhatsApp
+                </h2>
+                <p className="text-xs text-black font-bold mt-1 max-w-xl leading-relaxed">
+                  Perubahan data di sini akan otomatis langsung mengubah alamat dan nomor WhatsApp yang tampil di seluruh bilah atas (Navbar), tautan bantuan WhatsApp, dan bagian Footer website.
+                </p>
+              </div>
+            </div>
+
+            {settingsSuccess && (
+              <div className="p-4 bg-[#A7F3D0] border-2 border-[#064E3B] rounded-2xl flex items-center gap-3 text-black text-xs font-black shadow-depth-sm">
+                <Check className="w-5 h-5 text-[#064E3B] shrink-0" />
+                <span>Alhamdulillah! Alamat kantor dan nomor WhatsApp berhasil diperbarui dan langsung aktif di seluruh website.</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSettings} className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Nomor WhatsApp */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-black text-black">
+                    Nomor WhatsApp Resmi Layanan:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={inputWhatsapp}
+                      onChange={(e) => setInputWhatsapp(e.target.value)}
+                      placeholder="+62 811-2233-4401 atau 081234567890"
+                      className="w-full px-4 py-2.5 pl-10 border-2 border-[#0284C7] rounded-xl text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#0284C7] bg-white"
+                    />
+                    <Phone className="w-4 h-4 text-black absolute left-3.5 top-3" />
+                  </div>
+                  <p className="text-[11px] text-black font-bold">
+                    Format nomor dapat ditulis lengkap (misal: <code className="font-mono bg-sky-100 px-1 rounded">+62 811-2233-4401</code> atau <code className="font-mono bg-sky-100 px-1 rounded">0812-3456-7890</code>).
+                  </p>
+                </div>
+
+                {/* Email Layanan */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-black text-black">
+                    Alamat Email Resmi Layanan:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={inputEmail}
+                      onChange={(e) => setInputEmail(e.target.value)}
+                      placeholder="amanah@mawaddah.id"
+                      className="w-full px-4 py-2.5 pl-10 border-2 border-[#0284C7] rounded-xl text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#0284C7] bg-white"
+                    />
+                    <Mail className="w-4 h-4 text-black absolute left-3.5 top-3" />
+                  </div>
+                  <p className="text-[11px] text-black font-bold">
+                    Email rujukan pertanyaan dan pengaduan adab syar'i.
+                  </p>
+                </div>
+              </div>
+
+              {/* Alamat Kantor Lengkap */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-black text-black">
+                  Alamat Kantor & Layanan Ta'aruf:
+                </label>
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    required
+                    value={inputAddress}
+                    onChange={(e) => setInputAddress(e.target.value)}
+                    placeholder="Contoh: Gedung Dakwah Mawaddah, Jl. Warung Buncit Raya No. 42, Jakarta Selatan"
+                    className="w-full px-4 py-2.5 pl-10 border-2 border-[#0284C7] rounded-xl text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#0284C7] bg-white"
+                  />
+                  <MapPin className="w-4 h-4 text-black absolute left-3.5 top-3" />
+                </div>
+                <p className="text-[11px] text-black font-bold">
+                  Cantumkan alamat kantor fisik untuk keperluan pertemuan nazhar resmi dan verifikasi wali tatap muka.
+                </p>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="p-4 bg-[#EBF5FE] border-2 border-[#0284C7] rounded-2xl space-y-3">
+                <span className="text-xs font-black text-black uppercase tracking-wider block border-b border-sky-300 pb-1">
+                  Pratinjau Tampilan di Navigasi & Footer:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-white p-3 rounded-xl border border-sky-300 space-y-1">
+                    <span className="text-[11px] font-black text-black block">Bilah Atas (Navbar):</span>
+                    <p className="font-bold text-black">Layanan Informasi: <u>WA {inputWhatsapp}</u></p>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-sky-300 space-y-1">
+                    <span className="text-[11px] font-black text-black block">Bagian Bawah (Footer):</span>
+                    <p className="font-bold text-black">Alamat: {inputAddress}</p>
+                    <p className="font-bold text-black">WhatsApp: {inputWhatsapp}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSavingSettings}
+                  className="px-6 py-3 bg-[#064E3B] hover:bg-[#043729] text-white font-black rounded-xl text-xs flex items-center gap-2 shadow-depth-sm btn-depth-emerald transition-all cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSavingSettings ? 'Menyimpan...' : 'Simpan Perubahan Kontak Lembaga'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

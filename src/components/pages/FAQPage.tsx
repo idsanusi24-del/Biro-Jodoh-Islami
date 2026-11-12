@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { FAQ_LIST } from '../../data/initialData';
 import { 
   HelpCircle, 
@@ -15,6 +16,7 @@ interface FAQPageProps {
 }
 
 export const FAQPage: React.FC<FAQPageProps> = ({ setCurrentTab, openComplaintModal }) => {
+  const { orgSettings } = useAuth();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggleIndex = (idx: number) => {
@@ -83,12 +85,12 @@ export const FAQPage: React.FC<FAQPageProps> = ({ setCurrentTab, openComplaintMo
             Konsultasikan keraguan Anda langsung dengan tim konsultan administrasi Biro Mawaddah melalui saluran WhatsApp resmi.
           </p>
           <a
-            href="https://wa.me/6281122334401?text=Bismillah,%20saya%20ingin%20konsultasi%20mengenai%20layanan%20Biro%20Taaruf%20Mawaddah"
+            href={`https://wa.me/${orgSettings.whatsappClean}?text=Bismillah,%20saya%20ingin%20konsultasi%20mengenai%20layanan%20Biro%20Taaruf%20Mawaddah`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-depth-emerald text-black inline-flex items-center gap-2 text-xs font-black px-4 py-2.5 rounded-xl transition-all shadow-depth-sm cursor-pointer"
           >
-            Hubungi CS WhatsApp
+            Hubungi CS WhatsApp ({orgSettings.whatsappNumber})
           </a>
         </div>
 

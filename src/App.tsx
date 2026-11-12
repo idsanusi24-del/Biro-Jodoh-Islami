@@ -14,6 +14,7 @@ import { MemberDashboard } from './components/dashboard/MemberDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { MediatorDashboard } from './components/dashboard/MediatorDashboard';
 import { AuthModal } from './components/modals/AuthModal';
+import { AdminAuthModal } from './components/modals/AdminAuthModal';
 import { ComplaintModal } from './components/modals/ComplaintModal';
 import { UserRole } from './types';
 import { Lock } from 'lucide-react';
@@ -22,6 +23,7 @@ function MainApp() {
   const { currentUser, articles } = useAuth();
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
+  const [adminAuthModalOpen, setAdminAuthModalOpen] = useState<boolean>(false);
   const [complaintModalOpen, setComplaintModalOpen] = useState<boolean>(false);
 
   // Render Dashboard based on current user role
@@ -41,13 +43,22 @@ function MainApp() {
               onClick={() => setAuthModalOpen(true)}
               className="btn-depth-emerald px-6 py-2.5 text-black font-black rounded-xl text-sm cursor-pointer"
             >
-              Masuk Akun
+              Masuk Akun Peserta
             </button>
             <button
               onClick={() => setCurrentTab('register')}
               className="bg-white hover:bg-sky-50 border-2 border-[#0284C7] px-6 py-2.5 text-black font-black rounded-xl text-sm shadow-depth-sm cursor-pointer"
             >
               Daftar Ta'aruf Baru
+            </button>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => setAdminAuthModalOpen(true)}
+              className="text-xs text-stone-600 hover:text-black font-bold underline inline-flex items-center gap-1 cursor-pointer"
+            >
+              <Lock className="w-3 h-3 text-stone-500" />
+              <span>Khusus Pengurus Lembaga? Buka Portal Admin</span>
             </button>
           </div>
         </div>
@@ -69,6 +80,7 @@ function MainApp() {
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
         openAuthModal={() => setAuthModalOpen(true)}
+        openAdminAuthModal={() => setAdminAuthModalOpen(true)}
         openComplaintModal={() => setComplaintModalOpen(true)}
       />
 
@@ -98,6 +110,7 @@ function MainApp() {
       <Footer
         setCurrentTab={setCurrentTab}
         openComplaintModal={() => setComplaintModalOpen(true)}
+        openAdminAuthModal={() => setAdminAuthModalOpen(true)}
       />
 
       {/* Modals */}
@@ -105,6 +118,14 @@ function MainApp() {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         setCurrentTab={setCurrentTab}
+        openAdminModal={() => setAdminAuthModalOpen(true)}
+      />
+
+      <AdminAuthModal
+        isOpen={adminAuthModalOpen}
+        onClose={() => setAdminAuthModalOpen(false)}
+        setCurrentTab={setCurrentTab}
+        openMemberModal={() => setAuthModalOpen(true)}
       />
 
       <ComplaintModal

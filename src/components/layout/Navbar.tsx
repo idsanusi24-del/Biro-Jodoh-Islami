@@ -20,6 +20,7 @@ interface NavbarProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
   openAuthModal: () => void;
+  openAdminAuthModal?: () => void;
   openComplaintModal: () => void;
 }
 
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   setCurrentTab,
   openAuthModal,
+  openAdminAuthModal,
   openComplaintModal,
 }) => {
   const { 
@@ -34,7 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     logout, 
     notifications, 
     markNotificationAsRead, 
-    markAllNotificationsAsRead 
+    markAllNotificationsAsRead,
+    orgSettings
   } = useAuth();
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -80,13 +83,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Official Contact Info */}
           <div className="flex items-center gap-4 ml-auto text-[11px] font-black">
             <a 
-              href="https://wa.me/6281122334401" 
+              href={`https://wa.me/${orgSettings.whatsappClean}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-black hover:underline"
             >
               <span className="hidden md:inline">Layanan Informasi:</span>
-              <span>WA +62 811-2233-4401</span>
+              <span>WA {orgSettings.whatsappNumber}</span>
             </a>
             <button
               onClick={openComplaintModal}
@@ -94,6 +97,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Pengaduan Adab
             </button>
+            {openAdminAuthModal && (
+              <button
+                onClick={openAdminAuthModal}
+                className="hidden sm:inline-flex items-center gap-1 text-[10px] text-black/70 hover:text-black font-black hover:underline cursor-pointer border-l border-black/20 pl-3"
+                title="Gerbang Khusus Pengurus & Pemilik Lembaga"
+              >
+                <span>Portal Admin</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -265,10 +277,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={openAuthModal}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-black text-black bg-white hover:bg-sky-50 border-2 border-[#0284C7] shadow-sm transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-black text-black bg-white hover:bg-sky-50 border-2 border-[#0284C7] shadow-sm transition-colors cursor-pointer"
                 >
                   <LogIn className="w-4 h-4 text-black" />
-                  Masuk
+                  Masuk Peserta
                 </button>
                 <button
                   onClick={() => setCurrentTab('register')}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { 
   HeartHandshake, 
   ShieldCheck, 
@@ -14,9 +15,15 @@ import {
 interface FooterProps {
   setCurrentTab: (tab: string) => void;
   openComplaintModal: () => void;
+  openAdminAuthModal?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setCurrentTab, openComplaintModal }) => {
+export const Footer: React.FC<FooterProps> = ({ 
+  setCurrentTab, 
+  openComplaintModal,
+  openAdminAuthModal 
+}) => {
+  const { orgSettings } = useAuth();
   return (
     <footer className="bg-[#BAE6FD] text-black border-t-4 border-[#0284C7]">
       {/* Top Quranic Banner in Biru Laut with Hijau Zamrud & Merah Accents */}
@@ -127,20 +134,20 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentTab, openComplaintModa
             <div className="space-y-2.5 text-xs text-black">
               <div className="flex items-center gap-2 font-black text-black">
                 <Phone className="w-4 h-4 text-black shrink-0" />
-                <span>CS Resmi: +62 811-2233-4401</span>
+                <span>CS Resmi: {orgSettings.whatsappNumber}</span>
               </div>
               <div className="flex items-center gap-2 font-black text-black">
                 <Mail className="w-4 h-4 text-black shrink-0" />
-                <span>amanah@mawaddah.id</span>
+                <span>{orgSettings.csEmail}</span>
               </div>
               <div className="flex items-start gap-2 font-bold text-black">
                 <MapPin className="w-4 h-4 text-black shrink-0 mt-0.5" />
-                <span>Gedung Dakwah Mawaddah, Jl. Warung Buncit Raya No. 42, Jakarta Selatan</span>
+                <span>{orgSettings.officeAddress}</span>
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
                 <a
-                  href="https://wa.me/6281122334401?text=Bismillah,%20saya%20ingin%20konsultasi%20mengenai%20layanan%20Biro%20Taaruf%20Mawaddah"
+                  href={`https://wa.me/${orgSettings.whatsappClean}?text=Bismillah,%20saya%20ingin%20konsultasi%20mengenai%20layanan%20Biro%20Taaruf%20Mawaddah`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-[#6EE7B7] hover:bg-[#34D399] text-black border-2 border-[#064E3B] rounded-xl text-xs font-black btn-depth-emerald transition-all"
@@ -172,6 +179,19 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentTab, openComplaintModa
             <button onClick={() => setCurrentTab('terms')} className="hover:underline transition-colors text-black">
               Syarat & Ketentuan Syar'i
             </button>
+            {openAdminAuthModal && (
+              <>
+                <span>•</span>
+                <button
+                  onClick={openAdminAuthModal}
+                  className="hover:underline transition-colors text-black/80 hover:text-black font-black flex items-center gap-1 cursor-pointer"
+                  title="Gerbang Khusus Pengurus & Pemilik Lembaga"
+                >
+                  <Lock className="w-3 h-3 text-black" />
+                  <span>Portal Pengurus</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

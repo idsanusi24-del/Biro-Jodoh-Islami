@@ -173,3 +173,11 @@ export interface WaliVerificationRecord {
   timestamp: string;
 }
 
+export interface OrganizationSettings {
+  officeAddress: string;
+  whatsappNumber: string;
+  whatsappClean: string;
+  csEmail: string;
+}
+
+

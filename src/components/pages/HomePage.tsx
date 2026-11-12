@@ -263,89 +263,87 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* Perbandingan: Mawaddah vs Aplikasi Kencan */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <h2 className="font-serif text-3xl sm:text-4xl font-black text-black">
+      {/* Perbandingan: Mawaddah vs Aplikasi Kencan (Compact & Rapi) */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-black text-xs font-black border-2 border-[#0284C7] shadow-depth-sm">
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>Komitmen Kemurnian Syariat</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-black text-black">
             Mengapa Mawaddah Berbeda?
           </h2>
-          <p className="text-sm text-black font-bold">
-            Perbandingan tegas antara platform ta'aruf syar'i dengan aplikasi kencan / dating apps modern.
+          <p className="text-xs sm:text-sm text-black font-bold">
+            Perbandingan esensial antara platform ta'aruf syar'i dengan aplikasi kencan bebas.
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl border-2 border-[#0284C7] shadow-depth-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#BAE6FD] text-black border-b-2 border-[#0284C7]">
-                  <th className="py-4 px-6 text-sm font-black text-black">Parameter Penilaian</th>
-                  <th className="py-4 px-6 text-sm font-black text-black bg-[#A7F3D0]">
-                    Biro Ta'aruf Mawaddah (Syar'i)
-                  </th>
-                  <th className="py-4 px-6 text-sm font-black text-black bg-[#FECDD3]">
-                    Aplikasi Kencan Bebas (Dating Apps)
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-sky-200 text-xs sm:text-sm text-black">
-                <tr className="hover:bg-sky-50 transition-colors">
-                  <td className="py-4 px-6 font-black text-black">Tujuan Hubungan</td>
-                  <td className="py-4 px-6 text-black bg-[#A7F3D0]/40 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
-                    Pernikahan berkah sah secara syariat & negara
-                  </td>
-                  <td className="py-4 px-6 text-black bg-[#FECDD3]/40 font-bold flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-black shrink-0" />
-                    Pacaran santai, pertemanan, hiburan sesaat
-                  </td>
-                </tr>
-                <tr className="hover:bg-sky-50 transition-colors">
-                  <td className="py-4 px-6 font-black text-black">Akses Chatting</td>
-                  <td className="py-4 px-6 text-black bg-[#A7F3D0]/40 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
-                    Terarah dipandu Mediator & ada pengawasan
-                  </td>
-                  <td className="py-4 px-6 text-black bg-[#FECDD3]/40 font-bold flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-black shrink-0" />
-                    Chatting bebas tanpa batas, rawan rayuan & maksiat
-                  </td>
-                </tr>
-                <tr className="hover:bg-sky-50 transition-colors">
-                  <td className="py-4 px-6 font-black text-black">Peran Wali / Orang Tua</td>
-                  <td className="py-4 px-6 text-black bg-[#A7F3D0]/40 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
-                    Wajib terkonfirmasi sejak awal dan mendampingi
-                  </td>
-                  <td className="py-4 px-6 text-black bg-[#FECDD3]/40 font-bold flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-black shrink-0" />
-                    Disembunyikan dari orang tua / hubungan sembunyi
-                  </td>
-                </tr>
-                <tr className="hover:bg-sky-50 transition-colors">
-                  <td className="py-4 px-6 font-black text-black">Kerahasiaan Foto & Kontak</td>
-                  <td className="py-4 px-6 text-black bg-[#A7F3D0]/40 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
-                    Privat, tertutup publik, hanya dibuka saat saling ridho
-                  </td>
-                  <td className="py-4 px-6 text-black bg-[#FECDD3]/40 font-bold flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-black shrink-0" />
-                    Foto dipajang terbuka untuk dinilai fisik semata
-                  </td>
-                </tr>
-                <tr className="hover:bg-sky-50 transition-colors">
-                  <td className="py-4 px-6 font-black text-black">Pertemuan Fisik (Nazhar)</td>
-                  <td className="py-4 px-6 text-black bg-[#A7F3D0]/40 font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
-                    Di kediaman wali atau kantor resmi bersama mahram
-                  </td>
-                  <td className="py-4 px-6 text-black bg-[#FECDD3]/40 font-bold flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-black shrink-0" />
-                    Kencan berdua-duaan (khalwat) di tempat umum/tertutup
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        {/* 2 Compact Cards Side-by-Side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Card Mawaddah Syar'i */}
+          <div className="bg-white rounded-2xl border-2 border-[#064E3B] p-5 shadow-depth-md space-y-4 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b-2 border-[#A7F3D0] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#A7F3D0] border border-[#064E3B] flex items-center justify-center font-black">
+                  <CheckCircle2 className="w-4 h-4 text-[#064E3B]" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-base font-black text-black">Biro Ta'aruf Mawaddah</h3>
+                  <span className="text-[10px] font-black text-[#064E3B] uppercase tracking-wider bg-emerald-100 px-2 py-0.5 rounded-full">Sesuai Syariat</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-black">
+              {[
+                { title: 'Tujuan Hubungan', desc: 'Pernikahan berkah sah secara syariat & negara.' },
+                { title: 'Akses Komunikasi', desc: 'Terarah dipandu Mediator amanah, tanpa khalwat.' },
+                { title: 'Peran Wali Nasab', desc: 'Wajib terkonfirmasi sejak awal & merestui proses.' },
+                { title: 'Privasi Foto & Kontak', desc: 'Tertutup & disamarkan demi menjaga izzah & iffah.' },
+                { title: 'Pertemuan (Nazhar)', desc: 'Didampingi mahram/wali di kantor resmi atau rumah.' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 bg-[#EBF5FE] p-2.5 rounded-xl border border-sky-200">
+                  <CheckCircle2 className="w-4 h-4 text-[#064E3B] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-black text-black block">{item.title}:</span>
+                    <span className="font-bold text-black text-[11px] leading-tight">{item.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Card Dating Apps Bebas */}
+          <div className="bg-white rounded-2xl border-2 border-[#B91C1C] p-5 shadow-depth-md space-y-4 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b-2 border-[#FECDD3] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#FECDD3] border border-[#B91C1C] flex items-center justify-center font-black">
+                  <XCircle className="w-4 h-4 text-[#B91C1C]" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-base font-black text-black">Aplikasi Kencan Bebas</h3>
+                  <span className="text-[10px] font-black text-[#B91C1C] uppercase tracking-wider bg-rose-100 px-2 py-0.5 rounded-full">Dating Apps Biasa</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-black">
+              {[
+                { title: 'Tujuan Hubungan', desc: 'Pacaran santai, pertemanan, atau hiburan sesaat.' },
+                { title: 'Akses Komunikasi', desc: 'Chatting bebas tanpa batas, rawan rayuan & maksiat.' },
+                { title: 'Peran Wali Nasab', desc: 'Disembunyikan dari orang tua / hubungan tanpa restu.' },
+                { title: 'Privasi Foto & Kontak', desc: 'Foto diumbar bebas ke publik untuk dinilai fisik semata.' },
+                { title: 'Pertemuan (Nazhar)', desc: 'Kencan berduaan (khalwat) di tempat umum/tertutup.' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 bg-rose-50/60 p-2.5 rounded-xl border border-rose-200">
+                  <XCircle className="w-4 h-4 text-[#B91C1C] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-black text-black block">{item.title}:</span>
+                    <span className="font-bold text-black text-[11px] leading-tight">{item.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

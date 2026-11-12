@@ -4,8 +4,18 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
+  let basePath = './';
+  if (process.env.BASE_PATH) {
+    basePath = process.env.BASE_PATH;
+  } else if (process.env.GITHUB_REPOSITORY) {
+    const parts = process.env.GITHUB_REPOSITORY.split('/');
+    if (parts.length === 2 && parts[1]) {
+      basePath = `/${parts[1]}/`;
+    }
+  }
+
   return {
-    base: './',
+    base: basePath,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

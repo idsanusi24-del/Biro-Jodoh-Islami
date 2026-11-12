@@ -9,7 +9,8 @@ import {
   Complaint, 
   AuditLog,
   NotificationItem,
-  WaliVerificationRecord
+  WaliVerificationRecord,
+  OrganizationSettings
 } from '../types';
 import { 
   INITIAL_USERS, 
@@ -41,10 +42,15 @@ interface AuthContextType {
   waliVerificationRecords: WaliVerificationRecord[];
   isLoading: boolean;
   isFirebaseConnected: boolean;
+  orgSettings: OrganizationSettings;
+  updateOrgSettings: (settings: Partial<OrganizationSettings>) => Promise<void>;
   
   // Actions
   switchDemoRole: (role: UserRole) => void;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmailDirect: (email: string) => Promise<UserProfile>;
+  signInMember: (email: string) => Promise<UserProfile>;
+  signInAdmin: (email: string, passkey: string) => Promise<UserProfile>;
   logout: () => Promise<void>;
   registerNewMember: (basic: Partial<UserProfile>, detail: Partial<MemberDetail>) => Promise<UserProfile>;
   updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
@@ -75,9 +81,24 @@ interface AuthContextType {
   exportProcessesToCSV: () => string;
 }
 
+const DEFAULT_ORG_SETTINGS: OrganizationSettings = {
+  officeAddress: 'Gedung Dakwah Mawaddah, Jl. Warung Buncit Raya No. 42, Jakarta Selatan',
+  whatsappNumber: '+62 811-2233-4401',
+  whatsappClean: '6281122334401',
+  csEmail: 'amanah@mawaddah.id'
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [orgSettings, setOrgSettings] = useState<OrganizationSettings>(() => {
+    try {
+      const saved = localStorage.getItem('mawaddah_org_settings');
+      return saved ? JSON.parse(saved) : DEFAULT_ORG_SETTINGS;
+    } catch {
+      return DEFAULT_ORG_SETTINGS;
+    }
+  });
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem('mawaddah_active_user');
@@ -361,6 +382,191 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const signInWithEmailDirect = async (emailInput: string): Promise<UserProfile> => {
+    setIsLoading(true);
+    try {
+      const cleanEmail = emailInput.trim().toLowerCase();
+      const isAdmin = cleanEmail === 'idsanusi24@gmail.com';
+
+      // Check existing local users
+      let user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+      // If not found in local state, try fetching from Firestore if connected
+      if (!user) {
+        try {
+          const querySnapshot = await getDocs(collection(db, 'users'));
+          querySnapshot.forEach(docSnap => {
+            const data = docSnap.data() as UserProfile;
+            if (data.email && data.email.toLowerCase() === cleanEmail) {
+              user = data;
+            }
+          });
+        } catch (e) {
+          console.warn('Direct login Firestore lookup note:', e);
+        }
+      }
+
+      if (!user) {
+        // Create user profile for this valid email
+        const newId = isAdmin ? 'user-admin-1' : `user-ikhwan-${Date.now()}`;
+        user = {
+          id: newId,
+          uid: newId,
+          email: cleanEmail,
+          fullName: isAdmin ? 'Sanusi (Super Admin)' : (cleanEmail.split('@')[0] || 'Anggota Mawaddah'),
+          gender: 'ikhwan',
+          role: isAdmin ? 'admin' : 'ikhwan',
+          registrationNumber: `MWD-2026-${isAdmin ? 'ADM' : 'IKH'}-${Math.floor(1000 + Math.random() * 9000)}`,
+          verificationStatus: isAdmin ? 'verified' : 'pending',
+          city: 'Jakarta',
+          age: 26,
+          createdAt: new Date().toISOString()
+        };
+        setAllUsers(prev => [user!, ...prev]);
+      } else if (isAdmin && (user.role !== 'admin' || user.verificationStatus !== 'verified')) {
+        user = {
+          ...user,
+          role: 'admin',
+          verificationStatus: 'verified'
+        };
+        setAllUsers(prev => prev.map(u => u.email.toLowerCase() === cleanEmail ? user! : u));
+      }
+
+      setCurrentUser(user);
+      setCurrentDetail(allDetails[user.id] || null);
+      localStorage.setItem('mawaddah_active_user', JSON.stringify(user));
+      addAuditLog('Login Email Berhasil', `Pengguna masuk via email: ${cleanEmail}`);
+      return user;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInMember = async (emailInput: string): Promise<UserProfile> => {
+    setIsLoading(true);
+    try {
+      const cleanEmail = emailInput.trim().toLowerCase();
+      // Block admin email from participant login
+      if (cleanEmail === 'idsanusi24@gmail.com') {
+        throw new Error('Alamat email ini adalah Akun Khusus Pengelola Lembaga. Silakan gunakan Portal Resmi Pengurus Lembaga untuk masuk.');
+      }
+
+      // Check existing local users
+      let user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+      // If not found in local state, try fetching from Firestore if connected
+      if (!user) {
+        try {
+          const querySnapshot = await getDocs(collection(db, 'users'));
+          querySnapshot.forEach(docSnap => {
+            const data = docSnap.data() as UserProfile;
+            if (data.email && data.email.toLowerCase() === cleanEmail) {
+              user = data;
+            }
+          });
+        } catch (e) {
+          console.warn('Member login Firestore lookup note:', e);
+        }
+      }
+
+      if (!user) {
+        // Create participant profile
+        const newId = `user-ikhwan-${Date.now()}`;
+        user = {
+          id: newId,
+          uid: newId,
+          email: cleanEmail,
+          fullName: cleanEmail.split('@')[0] || 'Calon Anggota Mawaddah',
+          gender: 'ikhwan',
+          role: 'ikhwan',
+          registrationNumber: `MWD-2026-IKH-${Math.floor(1000 + Math.random() * 9000)}`,
+          verificationStatus: 'pending',
+          city: 'Jakarta',
+          age: 26,
+          createdAt: new Date().toISOString()
+        };
+        setAllUsers(prev => [user!, ...prev]);
+      } else if (user.role === 'admin') {
+        throw new Error('Akun ini memiliki hak akses administrator. Silakan masuk melalui Portal Pengurus Lembaga.');
+      }
+
+      setCurrentUser(user);
+      setCurrentDetail(allDetails[user.id] || null);
+      localStorage.setItem('mawaddah_active_user', JSON.stringify(user));
+      addAuditLog('Login Peserta Berhasil', `Peserta ta'aruf masuk: ${cleanEmail}`);
+      return user;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInAdmin = async (emailInput: string, passkey: string): Promise<UserProfile> => {
+    setIsLoading(true);
+    try {
+      const cleanEmail = emailInput.trim().toLowerCase();
+      if (cleanEmail !== 'idsanusi24@gmail.com') {
+        throw new Error('Akses Ditolak: Alamat email tidak memiliki otorisasi sebagai Pengelola Lembaga Mawaddah.');
+      }
+
+      const validPasskeys = ['mawaddah2026', '123456', 'admin2026', 'sanusi2026'];
+      if (!validPasskeys.includes(passkey.trim())) {
+        throw new Error('Kode Keamanan / Passkey Pengurus tidak sesuai. Mohon periksa kembali.');
+      }
+
+      let user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+      if (!user) {
+        user = {
+          id: 'user-admin-1',
+          uid: 'user-admin-1',
+          email: cleanEmail,
+          fullName: 'Sanusi (Super Admin)',
+          gender: 'ikhwan',
+          role: 'admin',
+          registrationNumber: 'MWD-2026-ADM-0001',
+          verificationStatus: 'verified',
+          city: 'Jakarta',
+          age: 30,
+          createdAt: new Date().toISOString()
+        };
+        setAllUsers(prev => [user!, ...prev]);
+      } else {
+        user = {
+          ...user,
+          role: 'admin',
+          verificationStatus: 'verified'
+        };
+        setAllUsers(prev => prev.map(u => u.email.toLowerCase() === cleanEmail ? user! : u));
+      }
+
+      setCurrentUser(user);
+      setCurrentDetail(allDetails[user.id] || null);
+      localStorage.setItem('mawaddah_active_user', JSON.stringify(user));
+      addAuditLog('Login Super Admin Berhasil', `Pengelola masuk ke panel administrasi: ${cleanEmail}`);
+      return user;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateOrgSettings = async (newSettings: Partial<OrganizationSettings>) => {
+    const updated: OrganizationSettings = {
+      ...orgSettings,
+      ...newSettings
+    };
+    if (newSettings.whatsappNumber) {
+      updated.whatsappClean = newSettings.whatsappNumber.replace(/[^0-9]/g, '');
+    }
+    setOrgSettings(updated);
+    localStorage.setItem('mawaddah_org_settings', JSON.stringify(updated));
+    addAuditLog('Pembaruan Pengaturan Lembaga', `Alamat/WhatsApp lembaga diperbarui oleh admin.`);
+
+    try {
+      await setDoc(doc(db, 'settings', 'organization'), updated, { merge: true });
+    } catch (e) {
+      console.warn('Firestore settings update note:', e);
     }
   };
 
@@ -940,8 +1146,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         waliVerificationRecords,
         isLoading,
         isFirebaseConnected,
+        orgSettings,
+        updateOrgSettings,
         switchDemoRole,
         signInWithGoogle,
+        signInWithEmailDirect,
+        signInMember,
+        signInAdmin,
         logout,
         registerNewMember,
         updateUserProfile,

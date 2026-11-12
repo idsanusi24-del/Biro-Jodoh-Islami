@@ -11,7 +11,12 @@ import {
   ArrowRight, 
   ArrowLeft,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  Upload,
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { ReadinessTimeline, MaritalStatus } from '../../types';
 
@@ -59,6 +64,70 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
   const [readinessTimeline, setReadinessTimeline] = useState<ReadinessTimeline>('3_to_6_months');
   const [isPhotoBlurred, setIsPhotoBlurred] = useState(true);
   const [termsAgreed, setTermsAgreed] = useState(false);
+
+  // Photo Upload State
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string>('');
+  const [photoFileName, setPhotoFileName] = useState<string>('');
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+  const [previewBlur, setPreviewBlur] = useState<boolean>(true);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoUploadError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setPhotoUploadError('Format berkas harus berupa gambar (JPG, PNG, atau WEBP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoUploadError('Ukuran berkas foto maksimal 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 800;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setUploadedPhotoUrl(compressed);
+          setPhotoFileName(file.name);
+        } else {
+          setUploadedPhotoUrl(event.target?.result as string);
+          setPhotoFileName(file.name);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setPhotoUploadError('Gagal memproses berkas foto. Silakan coba kembali.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setUploadedPhotoUrl('');
+    setPhotoFileName('');
+    setPhotoUploadError(null);
+  };
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -117,6 +186,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
           phoneNumber,
           city,
           age,
+          avatarUrl: uploadedPhotoUrl || undefined,
         },
         {
           birthPlace,
@@ -326,6 +396,154 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentTab }) => 
                     onChange={(e) => setWeightKg(Number(e.target.value))}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#0284C7] focus:outline-none focus:border-emerald-400 text-sm bg-[#EBF5FE] text-black"
                   />
+                </div>
+              </div>
+
+              {/* Syar'i Photo Upload Widget */}
+              <div className="mt-6 p-5 sm:p-6 rounded-2xl bg-[#EBF5FE] border-2 border-[#0284C7]/80 shadow-depth-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#064E3B]/30 pb-3">
+                  <div>
+                    <h4 className="font-serif text-base sm:text-lg font-black text-black flex items-center gap-2">
+                      <Camera className="w-5 h-5 text-emerald-700" />
+                      <span>Upload Pas Foto Peserta (Syar'i)</span>
+                    </h4>
+                    <p className="text-xs text-black font-medium mt-0.5">
+                      Foto diperlukan untuk verifikasi keabsahan berkas oleh mediator dan sesi Nazhar yang disetujui.
+                    </p>
+                  </div>
+                  <span className="text-[11px] bg-emerald-100 text-emerald-900 font-black px-3 py-1 rounded-full border border-emerald-400 shadow-xs w-fit">
+                    Dilindungi Kode Etik Syar'i
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                  {/* Photo Preview Column */}
+                  <div className="md:col-span-4 flex flex-col items-center">
+                    <div className="relative w-36 h-48 rounded-2xl border-2 border-dashed border-[#0284C7] bg-white overflow-hidden shadow-depth-sm flex items-center justify-center">
+                      {uploadedPhotoUrl ? (
+                        <>
+                          <img
+                            src={uploadedPhotoUrl}
+                            alt="Foto Peserta"
+                            className={`w-full h-full object-cover transition-all duration-300 ${
+                              isPhotoBlurred && previewBlur ? 'blur-md scale-105' : ''
+                            }`}
+                          />
+                          {isPhotoBlurred && previewBlur && (
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-2">
+                              <Lock className="w-6 h-6 text-emerald-300 mb-1" />
+                              <span className="text-[11px] font-black text-white leading-tight">
+                                Proteksi Sensor Aktif
+                              </span>
+                              <span className="text-[9px] text-emerald-100 mt-0.5">
+                                Hanya dibuka saat Nazhar
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-center p-4 space-y-2">
+                          <div className="w-12 h-12 rounded-full bg-[#BEE3FB] mx-auto flex items-center justify-center text-[#0284C7] border border-[#0284C7]/40">
+                            <User className="w-6 h-6" />
+                          </div>
+                          <span className="text-xs font-bold text-black block">
+                            Belum Ada Foto
+                          </span>
+                          <span className="text-[10px] text-black font-medium block leading-tight">
+                            Format pas foto formal / setengah badan
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {uploadedPhotoUrl && (
+                      <div className="flex items-center gap-2 mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewBlur(!previewBlur)}
+                          className="text-[11px] font-bold text-black hover:text-emerald-800 flex items-center gap-1 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-[#0284C7] shadow-xs transition-colors"
+                        >
+                          {previewBlur ? (
+                            <>
+                              <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Lihat Asli</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-3.5 h-3.5 text-red-600" />
+                              <span>Uji Sensor</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          className="text-[11px] font-bold text-red-700 hover:text-red-900 flex items-center gap-1 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-red-300 shadow-xs transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Controls & Syar'i Criteria */}
+                  <div className="md:col-span-8 space-y-4">
+                    <div>
+                      <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#064E3B] text-white font-bold text-xs sm:text-sm hover:bg-[#075e46] transition-all cursor-pointer shadow-depth-sm active:translate-y-0.5">
+                        <Upload className="w-4 h-4 text-emerald-300" />
+                        <span>{uploadedPhotoUrl ? 'Ganti Foto Peserta' : 'Pilih Berkas Foto Peserta'}</span>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/webp"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+                      {photoFileName && (
+                        <p className="text-xs font-bold text-emerald-900 mt-2 flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 inline shrink-0" />
+                          <span>Berkas foto berhasil diunggah: {photoFileName}</span>
+                        </p>
+                      )}
+                      {photoUploadError && (
+                        <p className="text-xs font-bold text-red-600 mt-1.5 flex items-center gap-1.5">
+                          <AlertCircle className="w-4 h-4 text-red-600 inline shrink-0" />
+                          <span>{photoUploadError}</span>
+                        </p>
+                      )}
+                      <p className="text-[11px] text-black font-medium mt-1">
+                        Format didukung: JPG, PNG, WEBP (Otomatis dioptimasi & dienkripsi, maks 5 MB).
+                      </p>
+                    </div>
+
+                    {/* Syar'i Criteria Info */}
+                    <div className="bg-white p-3.5 rounded-xl border border-[#0284C7] space-y-1.5 text-xs text-black shadow-xs">
+                      <div className="font-bold text-emerald-900 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-emerald-600" />
+                        <span>Panduan Foto Sesuai Syariat Islam:</span>
+                      </div>
+                      <ul className="list-disc list-inside space-y-1 text-black font-medium pl-1 leading-snug text-[11px]">
+                        <li><strong>Ikhwan:</strong> Berbusana sopan/rapi, menutup aurat, wajah tampak jelas (tanpa kacamata hitam atau masker).</li>
+                        <li><strong>Akhwat:</strong> Menutup aurat secara sempurna (jilbab/khimar syar'i rapi), tidak bermakeup/tabarruj berlebihan, tanpa filter kamera buatan.</li>
+                        <li><strong>Kerahasiaan Aman:</strong> Foto tidak pernah dipajang di galeri publik terbuka. Foto hanya dapat dilihat oleh kandidat yang telah disetujui ta'aruf oleh mediator.</li>
+                      </ul>
+                    </div>
+
+                    {/* Quick Privacy Toggle */}
+                    <div className="flex items-center gap-3 pt-1">
+                      <input
+                        type="checkbox"
+                        id="photoBlurCheck"
+                        checked={isPhotoBlurred}
+                        onChange={(e) => setIsPhotoBlurred(e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <label htmlFor="photoBlurCheck" className="text-xs font-bold text-black cursor-pointer select-none">
+                        Aktifkan Proteksi Sensor Buram Foto (Direkomendasikan demi menjaga privasi syar'i)
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
